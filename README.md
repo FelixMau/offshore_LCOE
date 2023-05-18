@@ -13,3 +13,5 @@ Student Project to estimate LCOE and Energyharvest for offshore windturbines in 
 
 - Electrical components modeling: It includes models to simulate electrical losses, transformer efficiency, and other electrical components' behavior in a wind power system.
 
+### [Feedinlib] (https://github.com/oemof/feedinlib)
+Also seenms to be providing promissing tools and helpful features, yet I was not able to make it running
