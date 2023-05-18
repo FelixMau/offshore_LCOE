@@ -15,3 +15,6 @@ Student Project to estimate LCOE and Energyharvest for offshore windturbines in 
 
 ### [Feedinlib](https://github.com/oemof/feedinlib)
 Also seems to be providing promising tools and helpful features, yet I was not able to make it running
+
+### [Meteostat](https://dev.meteostat.net/python/#installation)
+For weather data, we'll see how capable this will be!
