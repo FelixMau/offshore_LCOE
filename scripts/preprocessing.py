@@ -1,46 +1,35 @@
-from feedinlib.powerplants import WindPowerPlant
-from feedinlib.powerplants import get_power_plant_data
-
-from feedinlib.open_FRED import Weather
-
-
-from shapely.geometry import Point
-
-# plot wind speed
-import matplotlib.pyplot as plt
+import dataclasses
+import cartopy.crs as ccrs
+import geopandas as gpd
 
 
-
-# get wind turbines
-turbine_df = get_power_plant_data(dataset='oedb_turbine_library')
-# print the first four turbines
-turbine_df.iloc[1:5, :]
-
-
-# set up wind turbine using the wind turbine library
-turbine_data = {
-    'turbine_type': 'E-101/3050',  # turbine name as in turbine library
-    'hub_height': 135  # in m
-    }
-wind_turbine = WindPowerPlant(**turbine_data)
-
-# specify latitude and longitude of wind turbine location
-location = Point(13.5, 52.4)
-
-# download weather data for June 2017
-open_FRED_weather_data = Weather(
-    start='2017-06-01', stop='2017-07-01',
-    locations=[location],
-    heights=[140, 160],
-    variables="windpowerlib",
-    **defaultdb())
-
-# get weather data in windpowerlib format
-weather_df = open_FRED_weather_data.df(location=location, lib="windpowerlib")
+@dataclasses.dataclass
+class location():
+    x: float
+    y: float
+    crs: ccrs
+    countries: gpd.GeoDataFrame
+    projection: ccrs
+    depth_map: gpd.GeoDataFrame
+    waterdepth: float = dataclasses.field(init=False)
+    ground_material: str = dataclasses.field(init=False)
 
 
-# plot wind speed
-weather_df.loc[:, ['wind_speed']].plot(title='Wind speed')
-plt.xlabel('Time')
-plt.ylabel('Wind speed in m/s')
-plt.plot()
+    def __post_init__(self):
+        get_water_depth(self.x, self.y, self.depth_map)
+        gebco = rasterio.open('/home/felix/PycharmProjects/offshore_LCOE/data/gebco_2023_n61.0_s51.0_w3.0_e18.0.nc')
+        band = gebco.read(1)
+        np.unique(band)
+        show(band)
+
+
+@dataclasses.dataclass
+class turbine():
+    name: str
+    capacity: float
+
+
+
+
+
+
