@@ -5,21 +5,30 @@ import rasterio
 import numpy as np
 from rasterio.plot import show
 import matplotlib.pyplot as plt
-
+import streamlit as st
+from PIL import Image
 from rasterio.plot import show
 
 
-def get_water_depth(x: float, y: float, depth_map: rasterio.Band, dataset: rasterio.DatasetReader, crs) -> float:
+def _get_water_depth(x: float, y: float, depth_map: rasterio.Band, dataset: rasterio.DatasetReader, crs) -> float:
     gpd.points_from_xy(x=[3], y=[54], crs=crs).to_crs(dataset.crs.to_epsg(confidence_threshold=70))
     row, col = dataset.index(x, y)
     return depth_map[row, col]
 
 
-def print_depth_map() -> plt.axes:
+def print_depth_map() -> Image:
     with rasterio.open(
-            "/home/felix/PycharmProjects/offshore_LCOE/data/GEBCO_29_May_2023_2c33d4d8c3a0/gebco_2023_n57.0_s52.0_w3.0_e18.0.tif") as dataset:
+            "../data/maps/GEBCO_WATER_DEPTH.tif") as dataset:
         band = dataset.read(1)
-        return show(band)
+    countries = gpd.read_file("../data/maps/country_shapes.geojson").set_index('name')
+    fig, ax = plt.subplots(1, figsize=(14, 8))
+    countries.plot(ax=ax, color='none')
+    show(band, transform=dataset.transform, cmap='RdBu_r', ax=ax).figure.savefig('../data/figs/depth.png')
+    return Image.open("../data/figs/depth.png")
+
+
+
+
 
 
 @dataclasses.dataclass
@@ -35,12 +44,24 @@ class location():
 
     def __post_init__(self):
         with rasterio.open(
-                "/home/felix/PycharmProjects/offshore_LCOE/data/GEBCO_29_May_2023_2c33d4d8c3a0/gebco_2023_n57.0_s52.0_w3.0_e18.0.tif") as dataset:
+                "../data/maps/GEBCO_WATER_DEPTH.tif") as dataset:
             self.depth_map = dataset.read(1)
             self.depth_dataset = dataset
-        self.depth = get_water_depth(self.x, self.y, self.depth_map, crs=self.projection)
+        self.depth = _get_water_depth(self.x, self.y, self.depth_map, crs=self.projection)
 
-    def is_location_at_sea(self):
+    def is_location_offshore(self) -> bool:
+        """
+        Takes location class to return bool (True or False) whether the given location is offshore or not
+        :return:
+        """
+        pass
+
+
+    def get_distance_to_coast(self) -> float:
+        """
+        Function to return float for flight distance to next German coast
+        :return:
+        """
         pass
 
 

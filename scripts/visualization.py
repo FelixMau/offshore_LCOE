@@ -9,7 +9,10 @@ import yaml
 from yaml.loader import SafeLoader
 import xarray as xr
 import pandas as pd
-
+import topografic
+import rasterio
+from rasterio.plot import show
+from PIL import Image
 
 def color_map(turbine, cutout, cells, plot_grid_dict, projection):
     cap_factors = cutout.wind(turbine=turbine, capacity_factor=True)
@@ -54,7 +57,7 @@ def main():
     # Reading cutout for given year:
 
     cutout = atlite.Cutout(
-        "/home/felix/PycharmProjects/offshore_LCOE/scripts/western-europe-2011-01.nc"
+        "../data/weather/western-europe-2011-01.nc"
 
     )
     cutout.prepare()
@@ -103,10 +106,7 @@ def main():
     point = shapely.geometry.Point(x, y)
     #point = gpd.points_from_xy(x=[3], y=[54], crs="EPSG:4326").to_crs(3050)
     plot_power_curve(cutout, turbine, cells, plot_grid_dict=None, projection=None, point=point, cap_factors= cap_factors)
-
-
-
-
+    st.image(topografic.print_depth_map())
 
 
 
