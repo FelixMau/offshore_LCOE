@@ -1,3 +1,4 @@
+import shapely.geometry
 from cartopy.crs import PlateCarree as plate
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -20,6 +21,33 @@ def color_map(turbine, cutout, cells, plot_grid_dict, projection):
     fig.tight_layout()
 
     # Display the plot in the main section
+    st.pyplot(fig)
+    return cap_factors
+
+
+def plot_power_curve(cutout, turbine, cells, plot_grid_dict, projection, point: shapely.geometry.Point, cap_factors):
+    sites = gpd.GeoDataFrame(
+        [
+            [f"{turbine}", point.x, point.y, 10],
+        ],
+        columns=["name", "x", "y", "capacity"],
+    ).set_index("name")
+    cells_generation = sites.merge(cells, how="inner").rename(pd.Series(sites.index))
+
+    layout = (
+        xr.DataArray(cells_generation.set_index(["y", "x"]).capacity.unstack())
+        .reindex_like(cap_factors)
+        .rename("Installed Capacity [MW]")
+    )
+    fig, ax = plt.subplots(1, figsize=(9, 4))
+    power_generation = cutout.wind(
+        turbine, layout=layout, shapes=cells_generation.geometry
+    )
+
+    power_generation.to_pandas().plot(subplots=True, ax=ax)
+    ax.set_xlabel("date")
+    ax.set_ylabel("Generation [MW]")
+    fig.tight_layout()
     st.pyplot(fig)
 
 def main():
@@ -67,7 +95,15 @@ def main():
 
     cells = cutout.grid
 
-    color_map(turbine, cutout, cells, plot_grid_dict, projection)
+    st.sidebar.title("Coordinates")
+    x = st.sidebar.number_input("X coordinate", value=3.0)
+    y = st.sidebar.number_input("Y coordinate", value=54.0)
+
+    cap_factors = color_map(turbine, cutout, cells, plot_grid_dict, projection)#
+    point = shapely.geometry.Point(x, y)
+    #point = gpd.points_from_xy(x=[3], y=[54], crs="EPSG:4326").to_crs(3050)
+    plot_power_curve(cutout, turbine, cells, plot_grid_dict=None, projection=None, point=point, cap_factors= cap_factors)
+
 
 
 
