@@ -13,45 +13,9 @@ import topografic
 import rasterio
 from rasterio.plot import show
 from PIL import Image
-
-def color_map(turbine, cutout, cells, plot_grid_dict, projection):
-    cap_factors = cutout.wind(turbine=turbine, capacity_factor=True)
-
-    fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
-    cap_factors.name = "Capacity Factor"
-    cap_factors.plot(ax=ax, transform=plate())
-    cells.plot(ax=ax, **plot_grid_dict)
-    fig.tight_layout()
-
-    # Display the plot in the main section
-    st.pyplot(fig)
-    return cap_factors
+from energyharvest import color_map, plot_power_curve
 
 
-def plot_power_curve(cutout, turbine, cells, plot_grid_dict, projection, point: shapely.geometry.Point, cap_factors):
-    sites = gpd.GeoDataFrame(
-        [
-            [f"{turbine}", point.x, point.y, 10],
-        ],
-        columns=["name", "x", "y", "capacity"],
-    ).set_index("name")
-    cells_generation = sites.merge(cells, how="inner").rename(pd.Series(sites.index))
-
-    layout = (
-        xr.DataArray(cells_generation.set_index(["y", "x"]).capacity.unstack())
-        .reindex_like(cap_factors)
-        .rename("Installed Capacity [MW]")
-    )
-    fig, ax = plt.subplots(1, figsize=(9, 4))
-    power_generation = cutout.wind(
-        turbine, layout=layout, shapes=cells_generation.geometry
-    )
-
-    power_generation.to_pandas().plot(subplots=True, ax=ax)
-    ax.set_xlabel("date")
-    ax.set_ylabel("Generation [MW]")
-    fig.tight_layout()
-    st.pyplot(fig)
 
 def main():
     # Reading cutout for given year:
@@ -105,8 +69,10 @@ def main():
     cap_factors = color_map(turbine, cutout, cells, plot_grid_dict, projection)#
     point = shapely.geometry.Point(x, y)
     #point = gpd.points_from_xy(x=[3], y=[54], crs="EPSG:4326").to_crs(3050)
+
     plot_power_curve(cutout, turbine, cells, plot_grid_dict=None, projection=None, point=point, cap_factors= cap_factors)
-    st.image(topografic.print_depth_map())
+
+    topografic.print_depth_map()
 
 
 

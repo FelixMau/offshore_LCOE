@@ -16,19 +16,19 @@ def _get_water_depth(x: float, y: float, depth_map: rasterio.Band, dataset: rast
     return depth_map[row, col]
 
 
-def print_depth_map() -> Image:
+def print_depth_map() -> None:
     with rasterio.open(
             "../data/maps/GEBCO_WATER_DEPTH.tif") as dataset:
         band = dataset.read(1)
     countries = gpd.read_file("../data/maps/country_shapes.geojson").set_index('name')
     fig, ax = plt.subplots(1, figsize=(14, 8))
     countries.plot(ax=ax, color='none')
-    show(band, transform=dataset.transform, cmap='RdBu_r', ax=ax).figure.savefig('../data/figs/depth.png')
-    return Image.open("../data/figs/depth.png")
-
-
-
-
+    img = show(band, transform=dataset.transform, ax=ax,
+               vmin=-100,
+               vmax=10)
+    im = img.get_images()[0]
+    fig.colorbar(im, ax=ax)
+    st.pyplot(fig)
 
 
 @dataclasses.dataclass
