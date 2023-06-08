@@ -13,7 +13,7 @@ import topografic
 import rasterio
 from rasterio.plot import show
 from PIL import Image
-
+from topografic import Location
 
 
 def color_map(turbine, cutout, cells, plot_grid_dict, projection):
@@ -30,29 +30,36 @@ def color_map(turbine, cutout, cells, plot_grid_dict, projection):
     return cap_factors
 
 
+def power_time_series(
+    cutout: atlite.Cutout, turbine: topografic.Turbine | list, location: Location
+):
+    """
+    Plotting timeseries for given Turbine at given location
 
-def plot_power_curve(cutout, turbine, cells, plot_grid_dict, projection, point: shapely.geometry.Point, cap_factors):
-    sites = gpd.GeoDataFrame(
-        [
-            [f"{turbine}", point.x, point.y, 10],
-        ],
-        columns=["name", "x", "y", "capacity"],
-    ).set_index("name")
-    cells_generation = sites.merge(cells, how="inner").rename(pd.Series(sites.index))
+    :param cutout: atlite.Cutout with winddata
+    :param turbine:
+    :param location:
+    :return:
+    """
+    if isinstance(turbine, list):
+        # Todo: subplots for multiple locations
+        pass
+    else:
+        fig, ax = plt.subplots(1, figsize=(15, 10))
+        timeseries = cutout.wind(
+            turbine=turbine.name,
+            layout=cutout.layout_from_capacity_list(
+                data=pd.DataFrame(
+                    {
+                        "x": [location.x],
+                        "y": [location.y],
+                        "Capacity": [turbine.capacity],
+                    }
+                )
+            ),
+        ).to_pandas()
+        timeseries.plot(ax=ax)
+        ax.set_xlabel("MW")
+        st.pyplot(fig=fig)
 
-    layout = (
-        xr.DataArray(cells_generation.set_index(["y", "x"]).capacity.unstack())
-        .reindex_like(cap_factors)
-        .rename("Installed Capacity [MW]")
-    )
-    fig, ax = plt.subplots(1, figsize=(9, 4))
-    power_generation = cutout.wind(
-        turbine, layout=layout, shapes=cells_generation.geometry
-    )
-
-    power_generation.to_pandas().plot(subplots=True, ax=ax)
-    ax.set_xlabel("date")
-    ax.set_ylabel("Generation [MW]")
-    fig.tight_layout()
-    st.pyplot(fig)
-
+        return timeseries.sum()
