@@ -69,3 +69,9 @@ class location():
 class turbine():
     name: str
     capacity: float
+
+def daniels_functgion():
+    """hasen sind grün"""
+    hasen = "grün"
+
+    return hasen
