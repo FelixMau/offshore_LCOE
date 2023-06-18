@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, af=1):
+def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, af=1, turbine = 1):
 
     tech = pd.read_csv("data/lcoe/tech_data.csv", index_col=0)
 
