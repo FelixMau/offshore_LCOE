@@ -43,7 +43,7 @@ def select_location(countries):
     return Location(x=x, y=y, countries=countries)
 
 def heat_map(turbine, cutout, cells, plot_grid_dict, projection, location):
-    cap_factors = cutout.wind(turbine=turbine.name, capacity_factor=False)
+    cap_factors = cutout.wind(turbine=turbine.name, capacity_factor=False)*turbine.capacity
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
 
     cap_factors = gpd.GeoDataFrame(cap_factors.to_dataframe(),
@@ -54,10 +54,10 @@ def heat_map(turbine, cutout, cells, plot_grid_dict, projection, location):
                    stats=["mean"])
     cap_factors.reset_index()
     cap_factors["depth"] = [x['mean'] for x in stats]
-    cap_factors.apply(calc_lcoe_from_series, axis=1, **{"capacity":turbine.capacity})
+    cap_factors["lcoe"] = cap_factors.apply(calc_lcoe_from_series, axis=1, **{"capacity":turbine.capacity})
 
     cap_factors.name = "Capacity Factor"
-    cap_factors.plot(ax=ax, transform=plate())
+    cap_factors.plot(column ="lcoe", ax=ax, transform=plate(), legend=True, vmin = 0,vmax = 100)
     cells.plot(ax=ax, **plot_grid_dict)
     fig.tight_layout()
 
@@ -92,14 +92,13 @@ def main():
 
     cells = cutout.grid
 
-    cap_factors = color_map(turbine.name, cutout, cells, plot_grid_dict, projection)
+    color_map(turbine.name, cutout, cells, plot_grid_dict, projection)
 
     location = select_location(countries=countries)
-    power_yield = power_time_series(cutout, turbine, location=location)
+    #power_yield = power_time_series(cutout, turbine, location=location)
 
-    depth = topografic.print_depth_map(location)
+    topografic.print_depth_map(location)
 
-    st.write(calc_lcoe(capacity=turbine.capacity, power_yield=power_yield, distance =10, depth =20, value= "lower"))
     heat_map(turbine, cutout, cells, plot_grid_dict, projection, location)
 
 

@@ -38,7 +38,7 @@ class Turbine:
     name: str
     capacity: float = dataclasses.field(init=False)
     def __post_init__(self):
-        with open(windturbines.get("NREL_ReferenceTurbine_2020ATB_12MW_offshore"), "r") as f:
+        with open(windturbines.get(self.name), "r") as f:
             data = yaml.safe_load(f)
         self.capacity = max(data["POW"])
     def beauty_string(self):

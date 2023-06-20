@@ -5,6 +5,8 @@ import pandas as pd
 def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, value= "lower"):
 
     tech = pd.read_csv("../data/lcoe/tech_data.csv", index_col=0)
+    if depth > 0:
+        return None
     depth = -1*depth
     # calculate capex costs
     # Turbine
