@@ -8,32 +8,11 @@ import topografic
 import rasterio
 from rasterio.plot import show
 from PIL import Image
-from energyharvest import color_map, power_time_series
+from energyharvest import color_map, power_time_series, Turbine
 
 
-def main():
-    # Reading cutout for given year:
-
-    cutout = atlite.Cutout("../data/weather/western-europe-2011-01.nc")
-    cutout.prepare()
-
-    url = "https://tubcloud.tu-berlin.de/s/7bpHrAkjMT3ADSr/download/country_shapes.geojson"
-    countries = gpd.read_file(url).set_index("name")
-    crs = ccrs.PlateCarree()
-    projection = ccrs.PlateCarree()
-
-    plot_grid_dict = dict(
-        alpha=0.1,
-        edgecolor="k",
-        zorder=4,
-        aspect="equal",
-        facecolor="None",
-        transform=plate(),
-    )
-
-    # Add a title to your app
-    st.title("Wind Data Visualization")
-    turbine = topografic.Turbine(
+def chose_windturbine():
+    turbine = Turbine(
         name=st.selectbox(
             "Chose Windturbine",
             (
@@ -54,21 +33,48 @@ def main():
                 "Vestas_V164_7MW_offshore",
             ),
         ),
-        capacity=10,
     )
+    return turbine
 
-    cells = cutout.grid
-
+def select_location():
     st.sidebar.title("Coordinates")
     x = st.sidebar.number_input("X coordinate", value=3.0)
     y = st.sidebar.number_input("Y coordinate", value=54.0)
+    return topografic.Location(x=x, y=y, countries=countries)
+
+
+
+def main():
+    # Reading cutout for given year:
+
+    cutout = atlite.Cutout("../data/weather/western-europe-2011-01.nc")
+    cutout.prepare()
+
+    url = "https://tubcloud.tu-berlin.de/s/7bpHrAkjMT3ADSr/download/country_shapes.geojson"
+    countries = gpd.read_file(url).set_index("name")
+    projection = ccrs.PlateCarree()
+
+    plot_grid_dict = dict(
+        alpha=0.1,
+        edgecolor="k",
+        zorder=4,
+        aspect="equal",
+        facecolor="None",
+        transform=plate(),
+    )
+
+    # Add a title to your app
+    st.title("Wind Data Visualization")
+
+    turbine = chose_windturbine()
+
+    cells = cutout.grid
+
+
 
     cap_factors = color_map(turbine.name, cutout, cells, plot_grid_dict, projection)  #
-    point = shapely.geometry.Point(x, y)
-    # point = gpd.points_from_xy(x=[3], y=[54], crs="EPSG:4326").to_crs(3050)
 
-    location = topografic.Location(x=x, y=y, countries=countries)
-
+    location = select_location()
     power_time_series(cutout, turbine, location=location)
 
     topografic.print_depth_map(location)
