@@ -9,6 +9,7 @@ import rasterio
 from rasterio.plot import show
 from PIL import Image
 from energyharvest import color_map, power_time_series, Turbine
+from topografic import Location
 
 
 def chose_windturbine():
@@ -36,11 +37,11 @@ def chose_windturbine():
     )
     return turbine
 
-def select_location():
+def select_location(countries):
     st.sidebar.title("Coordinates")
     x = st.sidebar.number_input("X coordinate", value=3.0)
     y = st.sidebar.number_input("Y coordinate", value=54.0)
-    return topografic.Location(x=x, y=y, countries=countries)
+    return Location(x=x, y=y, countries=countries)
 
 
 
@@ -74,7 +75,7 @@ def main():
 
     cap_factors = color_map(turbine.name, cutout, cells, plot_grid_dict, projection)  #
 
-    location = select_location()
+    location = select_location(countries=countries)
     power_time_series(cutout, turbine, location=location)
 
     topografic.print_depth_map(location)
