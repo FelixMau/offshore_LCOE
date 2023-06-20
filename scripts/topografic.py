@@ -10,6 +10,7 @@ import streamlit as st
 from PIL import Image
 from rasterio.plot import show
 from collections import namedtuple
+import atlite
 
 
 def _get_water_depth(
@@ -90,10 +91,6 @@ class Location:
         pass
 
 
-@dataclasses.dataclass
-class Turbine:
-    name: str
-    capacity: float
 
 
 def print_depth_map(location: Location) -> None:
