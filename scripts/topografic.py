@@ -32,7 +32,7 @@ def _get_water_depth(
      return germany.geometry.contains(point)
 
 
-def get_distance_to_coast(countries = 1, point = 1, toggle: bool = True) -> float:
+def get_distance_to_coast(countries:gpd.Geodataframe, point, toggle: bool = True) -> float:
 
     germany = countries.loc["DE"]
     denmark = countries.loc["DK"]
