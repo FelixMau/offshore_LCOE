@@ -35,12 +35,12 @@ class Location:
     depth_map: rasterio.Band = dataclasses.field(init=False)
     depth: float = dataclasses.field(init=False)
     ground_material: str = dataclasses.field(init=False)
-    point: shapely.Point = dataclasses.field(init=False)
+    point: shapely.geometry.Point = dataclasses.field(init=False)
 
     def __post_init__(self):
-        with rasterio.open("../data/maps/GEBCO_WATER_DEPTH.tif") as dataset:
-            self.depth_map = dataset.read(1)
-            self.depth_dataset = dataset
+        dataset = rasterio.open("../data/maps/GEBCO_WATER_DEPTH.tif", "r")
+        self.depth_map = dataset.read(1)
+        self.depth_dataset = dataset
         self.point = gpd.points_from_xy(
             x=[float(self.x)], y=[float(self.y)], crs=self.projection
         ).to_crs(self.depth_dataset.crs.to_epsg(confidence_threshold=70))[0]
@@ -88,7 +88,7 @@ class Location:
             
         :return:
         """
-        pass
+        return self.x
 
 
 
