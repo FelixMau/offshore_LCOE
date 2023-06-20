@@ -31,7 +31,7 @@ def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, af=1, turbine = 
     # Planning
     capex_project = tech.loc["Nominal investment (Project development etc.) [M€/MW_e]"]*1e6
     # Sum total capex
-    capex = invest_project+invest_export+invest_array+invest_turbine+invest_found
+    capex = capex_project+capex_export+capex_array+capex_turbine+capex_found
     # calculate annuity factor
     wacc = tech.loc["WACC_real [%]"] / 100
     af = wacc / (1 - pow((1 + wacc), -tech.loc["Technical lifetime [years]"]))
