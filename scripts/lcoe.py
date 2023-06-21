@@ -1,10 +1,13 @@
 import pandas as pd
 
 
+
 def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, value= "lower"):
 
-    tech = pd.read_csv("data/lcoe/tech_data.csv", index_col=0)
-
+    tech = pd.read_csv("../data/lcoe/tech_data.csv", index_col=0)
+    if depth > 0:
+        return None
+    depth = -1*depth
     # calculate capex costs
     # Turbine
     capex_turbine = (tech.loc["Nominal investment (equipment: turbines) [M€/MW_e]"][value]+tech.loc["Nominal investment (installation: turbines) [M€/MW_e]"][value])*capacity*1e6
@@ -34,3 +37,12 @@ def calc_lcoe(capacity=1, power_yield=1, distance =1, depth =1, value= "lower"):
     lcoe = ((capex*af)+opex)/power_yield
 
     return lcoe
+
+def calc_lcoe_from_series(row: pd.Series, capacity: float = 1, distance = 1, value:str = "lower")->float:
+    """
+    Takes a pandas series to calculate lcoe based on given series and its index.
+    :return:
+    """
+    #Index(['lon', 'lat', 'specific generation', 'geometry'], dtype='object')
+    # ToDo: add distance once it is implemented to this call
+    return calc_lcoe(power_yield=row['specific generation'], capacity=capacity, depth=row["depth"], distance=distance, value=value)
