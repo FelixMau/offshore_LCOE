@@ -37,18 +37,23 @@ def color_map(turbine, cutout, cells, plot_grid_dict, projection):
 class Turbine:
     name: str
     capacity: float = dataclasses.field(init=False)
+
     def __post_init__(self):
         with open(windturbines.get(self.name), "r") as f:
             data = yaml.safe_load(f)
         self.capacity = max(data["POW"])
+
     def beauty_string(self):
         beauty_name = ""
         for idx, split in enumerate(self.name.split("_")):
-            if (any(element.isdigit() for element in split) or split == "offshore") and idx >1:
+            if (
+                any(element.isdigit() for element in split) or split == "offshore"
+            ) and idx > 1:
                 continue
             else:
                 beauty_name += " " + split
-        return beauty_name + " " +str(self.capacity)+ "MW"
+        return beauty_name + " " + str(self.capacity) + "MW"
+
 
 def power_time_series(
     cutout: atlite.Cutout, turbine: Turbine | list, location: Location
@@ -83,4 +88,3 @@ def power_time_series(
         st.pyplot(fig=fig)
 
         return timeseries.sum()
-

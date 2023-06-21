@@ -15,7 +15,6 @@ import atlite
 from sympy import Point, Polygon
 
 
-
 def _get_water_depth(
     x: float, y: float, depth_map: rasterio.Band, dataset: rasterio.DatasetReader, crs
 ) -> namedtuple("water_depth", ["depth_map", "depth"]):
@@ -27,26 +26,41 @@ def _get_water_depth(
 
     water_depth = namedtuple("water_depth", ["depth_map", "depth"])
     return water_depth(depth_map=depth_map, depth=depth_map[row, col])
- def is_location_offshore(countries = 1, point = 1) -> bool:
-     germany = countries.loc["DE"]
-     return germany.geometry.contains(point)
 
 
-def get_distance_to_coast(countries:gpd.Geodataframe, point, toggle: bool = True) -> float:
+def is_location_offshore(countries=1, point=1) -> bool:
+    return not any(countries.geometry.contains(point))
 
+
+def get_distance_to_coast(
+    countries: gpd.GeoDataFrame(), point: shapely.geometry.Point(), toggle: bool = True
+) -> float:
+    """
+    Calculates distance to country shape
+    :param countries:
+    :param point:
+    :param toggle: if True calculates distance to all relevant countries. False only reffers to Germany
+    :return: float distance in meters
+    """
     germany = countries.loc["DE"]
     denmark = countries.loc["DK"]
     sweden = countries.loc["SE"]
     norway = countries.loc["NO"]
 
     if toggle == True:
-
-        distance_point = [germany.geometry.distance(point), denmark.geometry.distance(point], sweden.geometry.distance(point), norway.geometry.distance(point)]
+        distance_point = [
+            germany.geometry.distance(point),
+            denmark.geometry.distance(point),
+            sweden.geometry.distance(point),
+            norway.geometry.distance(point),
+        ]
         min_distance = min(distance_point)
     else:
         min_distance = germany.geometry.distance(point)
 
-        return min_distance
+    return min_distance
+
+
 @dataclasses.dataclass
 class Location:
     x: float
@@ -72,7 +86,6 @@ class Location:
             crs=self.projection,
             dataset=self.depth_dataset,
         ).depth_map
-
 
 
 def print_depth_map(location: Location) -> None:
