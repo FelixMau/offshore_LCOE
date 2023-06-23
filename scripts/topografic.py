@@ -85,7 +85,7 @@ class Location:
             self.depth_map,
             crs=self.projection,
             dataset=self.depth_dataset,
-        ).depth_map
+        ).depth
 
 
 def print_depth_map(location: Location) -> None:

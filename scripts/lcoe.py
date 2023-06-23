@@ -3,6 +3,7 @@ from topografic import is_location_offshore, get_distance_to_coast
 import geopandas as gpd
 from shapely.geometry import Point
 
+
 def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
     """
     # Todo: Check units
@@ -92,7 +93,11 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
 
 
 def calc_lcoe_from_series(
-    row: pd.Series, capacity: float, countries: gpd.GeoDataFrame, value: str = "lower", toggle: bool = True,
+    row: pd.Series,
+    capacity: float,
+    countries: gpd.GeoDataFrame,
+    value: str = "lower",
+    other_countries_connection: bool = True,
 ) -> float:
     """
     Takes a pandas series to calculate lcoe based on given series and its index.
@@ -102,9 +107,13 @@ def calc_lcoe_from_series(
     offshore = is_location_offshore(countries=countries, point=row["geometry"])
 
     if offshore:
-        distance = get_distance_to_coast(countries=countries, point=row["geometry"], toggle=toggle)
+        distance = get_distance_to_coast(
+            countries=countries,
+            point=row["geometry"],
+            toggle=other_countries_connection,
+        )
         return calc_lcoe(
-            power_yield=row["specific generation"],
+            power_yield=row["Generation in MWh"],
             capacity=capacity,
             depth=row["depth"],
             distance=distance,

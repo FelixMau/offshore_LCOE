@@ -17,13 +17,16 @@ from PIL import Image
 from topografic import Location
 import dataclasses
 import yaml
+import altair as alt
 
 
 def color_map(turbine, cutout, cells, plot_grid_dict, projection):
-    cap_factors = cutout.wind(turbine=turbine, capacity_factor=True)
+    cap_factors = (
+        cutout.wind(turbine=turbine.name, capacity_factor=False) * turbine.capacity
+    )
 
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
-    cap_factors.name = "Capacity Factor"
+    cap_factors.name = "Generation in MWh"
     cap_factors.plot(ax=ax, transform=plate())
     cells.plot(ax=ax, **plot_grid_dict)
     fig.tight_layout()
@@ -83,8 +86,19 @@ def power_time_series(
                 )
             ),
         ).to_pandas()
-        timeseries.plot(ax=ax)
-        ax.set_xlabel("MW")
-        st.pyplot(fig=fig)
+        # st.line_chart(timeseries)
+        timeseries.rename(columns={0: "Power in MW"}, inplace=True)
+        timeseries.loc[:, "date"] = timeseries.index
+        return timeseries
 
-        return timeseries.sum()
+
+def duration_curve(timeseries, duration_col):
+    timeseries.loc[:, "interval"] = 1
+    timeseries_sorted = timeseries.sort_values(by=duration_col, ascending=True)
+    timeseries_sorted.reset_index(drop=True, inplace=True)
+    timeseries_sorted.loc[:, "duration"] = timeseries_sorted.loc[:, "interval"].cumsum()
+    timeseries_sorted.loc[:, "percentage"] = (
+        timeseries_sorted.loc[:, "duration"] * 100 / len(timeseries_sorted["duration"])
+    )
+
+    return timeseries_sorted
