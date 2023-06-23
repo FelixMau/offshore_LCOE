@@ -102,21 +102,25 @@ def heat_map(
         },
     )
     cap_factors.rename(columns={"lcoe": "lcoe [€/MWh]"}, inplace=True)  #
-    limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10]["lcoe [€/MWh]"]
+    limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10][
+        "lcoe [€/MWh]"
+    ]
     cap_factors = cap_factors.to_xarray()["lcoe [€/MWh]"]
 
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
     cap_factors.plot(ax=ax, transform=plate(), vmax=limit)
 
-    cells.plot(ax=ax, **plot_grid_dict, )
-
+    cells.plot(
+        ax=ax,
+        **plot_grid_dict,
+    )
     # Display the plot in the main section
     st.pyplot(fig)
     return cap_factors
 
+
 def even_more_results(dataframe: pd.DataFrame):
     st.write(dataframe.describe())
-
 
 
 def main():
@@ -158,20 +162,29 @@ def main():
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
         duration = duration_curve(power_yield, duration_col="Power in MW")
-        distance = get_distance_to_coast(countries=countries, point=location.point, toggle=other_countries_connection)
-        lcoe = calc_lcoe(capacity=turbine.capacity,
-                         power_yield=power_yield.sum()["Power in MW"],
-                         distance=distance,
-                         depth=location.depth,
-                         value=upper_lower)
+        distance = get_distance_to_coast(
+            countries=countries, point=location.point, toggle=other_countries_connection
+        )
+        lcoe = calc_lcoe(
+            capacity=turbine.capacity,
+            power_yield=power_yield.sum()["Power in MW"],
+            distance=distance,
+            depth=location.depth,
+            value=upper_lower,
+        )
         st.write(f"Depth at location is: {round(location.depth)} m")
         st.write(f"Distance to coast is: {round(distance)} km")
         st.write(
-            f"Lcoe at location is: {round(lcoe, 3)} €/MWh"\
-            f" or {round(lcoe/10, 3)} ct/kWh")
-        st.write(f"Energy Production at location is: {round(power_yield.sum()['Power in MW'], 3)} MWh")
-        st.write(f"The Turbine is not Producing Energy for {round(duration['Power in MW'].value_counts()[0]/87.60, 3)} \
-                    % of the year")
+            f"Lcoe at location is: {round(lcoe, 3)} €/MWh"
+            f" or {round(lcoe/10, 3)} ct/kWh"
+        )
+        st.write(
+            f"Energy Production at location is: {round(power_yield.sum()['Power in MW'], 3)} MWh"
+        )
+        st.write(
+            f"The Turbine is not Producing Energy for {round(duration['Power in MW'].value_counts()[0]/87.60, 3)} \
+                    % of the year"
+        )
         with st.expander("Additional evaluation"):
             even_more_results(power_yield.loc[:, "Power in MW"])
     with graphs:
@@ -180,9 +193,7 @@ def main():
         )
 
         with location_specific:
-            st.title(
-                "Single Turbine at Given location"
-            )
+            st.title("Single Turbine at Given location")
             topografic.print_depth_map(location)
             st.line_chart(data=power_yield, x="date", y=["Power in MW"])
 
@@ -193,9 +204,7 @@ def main():
             )
 
         with global_specific:
-            st.title(
-                "Lcoe and Energy yield for a single Turbine global level"
-            )
+            st.title("Lcoe and Energy yield for a single Turbine global level")
             production = color_map(turbine, cutout, cells, plot_grid_dict, projection)
             #
             heat_map(
