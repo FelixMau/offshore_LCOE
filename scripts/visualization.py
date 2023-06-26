@@ -122,6 +122,7 @@ def even_more_results(dataframe: pd.DataFrame):
 
 
 def main():
+    st.set_page_config(layout="wide")
     # # Reading cutout for given year:
     @st.cache_resource()
     def load_cutout():
