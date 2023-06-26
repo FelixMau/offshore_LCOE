@@ -126,7 +126,7 @@ def main():
     @st.cache_resource()
     def load_cutout():
 
-        cutout = atlite.Cutout("https://tubcloud.tu-berlin.de/s/nWdxbi4sg6LsAkR", )
+        cutout = atlite.Cutout("../data/weather/western-europe-2011.nc", )
         cutout.prepare()
         return cutout
 
