@@ -14,7 +14,6 @@ from collections import namedtuple  #
 import pandas as pd
 
 
-
 def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
     x = st.sidebar.number_input("X coordinate", value=3.0)
@@ -125,8 +124,7 @@ def main():
     # # Reading cutout for given year:
     @st.cache_resource()
     def load_cutout():
-
-        cutout = atlite.Cutout("https://tubcloud.tu-berlin.de/s/nWdxbi4sg6LsAkR", )
+        cutout = atlite.Cutout("../data/weather/western-europe-2011.nc")
         cutout.prepare()
         return cutout
 
