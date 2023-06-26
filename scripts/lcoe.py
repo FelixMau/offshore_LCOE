@@ -1,7 +1,6 @@
 import pandas as pd
 from topografic import is_location_offshore, get_distance_to_coast
 import geopandas as gpd
-from shapely.geometry import Point
 
 
 def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):

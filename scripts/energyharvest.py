@@ -1,23 +1,12 @@
-import shapely.geometry
 from cartopy.crs import PlateCarree as plate
-import cartopy.crs as ccrs
-import geopandas as gpd
 import matplotlib.pyplot as plt
 import atlite
 from atlite.resource import windturbines
 import streamlit as st
-import yaml
-from yaml.loader import SafeLoader
-import xarray as xr
 import pandas as pd
-import topografic
-import rasterio
-from rasterio.plot import show
-from PIL import Image
 from topografic import Location
 import dataclasses
 import yaml
-import altair as alt
 
 
 def color_map(turbine, cutout, cells, plot_grid_dict, projection):

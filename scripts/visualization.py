@@ -1,4 +1,3 @@
-from shapely.geometry import Point
 from cartopy.crs import PlateCarree as plate
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -12,9 +11,7 @@ import matplotlib.pyplot as plt
 import rasterstats as rs
 from collections import namedtuple  #
 
-import pydeck as pdk
 import pandas as pd
-import numpy as np
 
 
 def select_location_and_turbine(countries):
