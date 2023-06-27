@@ -7,9 +7,10 @@ import pandas as pd
 from topografic import Location
 import dataclasses
 import yaml
+import numpy as np
 
 
-def color_map(turbine, cutout, cells, plot_grid_dict, projection):
+def energy_yield(turbine, cutout, cells, plot_grid_dict, projection):
     cap_factors = (
         cutout.wind(turbine=turbine.name, capacity_factor=False) * turbine.capacity
     )
@@ -18,8 +19,17 @@ def color_map(turbine, cutout, cells, plot_grid_dict, projection):
     cap_factors.name = "Generation in MWh"
     cap_factors.plot(ax=ax, transform=plate())
     cells.plot(ax=ax, **plot_grid_dict)
-    fig.tight_layout()
 
+    # Add x and y axis labels
+    ax.set_xlabel('Longitude')
+    ax.set_ylabel('Latitude')
+
+    # Show axis ticks
+    x_ticks = cells.x[::5]
+    y_ticks = cells.y[::5]
+    plt.xticks(np.arange(min(x_ticks), max(x_ticks), 1.0))
+    plt.yticks(np.arange(min(y_ticks), max(y_ticks), 1.0))
+    fig.tight_layout()
     # Display the plot in the main section
     st.pyplot(fig)
     return cap_factors

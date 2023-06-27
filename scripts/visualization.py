@@ -4,12 +4,12 @@ import geopandas as gpd
 import atlite
 import streamlit as st
 import topografic
-from energyharvest import color_map, Turbine, power_time_series, duration_curve
+from energyharvest import energy_yield, Turbine, power_time_series, duration_curve
 from topografic import Location, get_distance_to_coast
 from lcoe import calc_lcoe_from_series, calc_lcoe
 import matplotlib.pyplot as plt
 import rasterstats as rs
-from collections import namedtuple  #
+import numpy as np
 
 import pandas as pd
 
@@ -17,8 +17,8 @@ import pandas as pd
 
 def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
-    x = st.sidebar.number_input("X coordinate", value=3.0)
-    y = st.sidebar.number_input("Y coordinate", value=54.0)
+    x = st.sidebar.number_input("Longitude", value=3.0)
+    y = st.sidebar.number_input("Latitude", value=54.0)
     turbine = Turbine.from_beautiful_name(
         name=st.sidebar.selectbox(
             "Chose Windturbine",
@@ -35,10 +35,31 @@ def select_location_and_turbine(countries):
             "Vestas V164 7MW"),
         ),
     )
-    upper_lower = st.sidebar.selectbox("Upper, lower values?", ("upper", "lower"))
-    other_countries_connection = st.sidebar.checkbox(
-        "Allow connection to other countries", value=True
+    upper_lower = {"Pessimistic": "upper",
+                   "Optimistic": "lower"}[st.sidebar.selectbox("Mode of Projection", ("Pessimistic", "Optimistic"))]
+    other_countries_connection = st.sidebar.selectbox("Allow connection to other countries",
+                                                      ("Yes, all countries", "No, only to Germany")
     )
+    if other_countries_connection == "Yes, all countries":
+        other_countries_connection = True
+    else:
+        other_countries_connection = False
+
+    with st.sidebar.expander("Info on Settings"):
+        st.write("`Longitude`: Sets Longitude (x value) of Location for Turbine and Location specific evaluation. "
+                 "Does not interfere with 'Global' values")
+
+        st.write("`Latitude`: Sets Latitude (y value) of Location for Turbine and Location specific evaluation. "
+                 "Does not interfere with 'Global' values")
+
+        st.write("`Chose Windturbine`: Select Wind-turbine from atlite Turbine datasets")
+
+        st.write("`Mode of Projection`: Determines whether optimistic or pessimistic Values are chosen for"
+                 "prices and Lifetimes in 2025")
+
+        st.write("`Allow connection to other countries`: Defines if connections to other countries than Germany "
+                 "are allowed. Influences the `Distance` value")
+
     return (
         Location(x=x, y=y, countries=countries),
         turbine,
@@ -56,6 +77,7 @@ def heat_map(
     location: Location,
     other_countries_connection,
     value,
+
 ):
     """
     Calculates lcoe for every cell with windspeed data and returns GeoDataFrame.
@@ -83,7 +105,7 @@ def heat_map(
 
     cap_factors.reset_index()
     cap_factors["depth"] = [x["mean"] for x in stats]
-    cap_factors["lcoe"] = cap_factors.apply(
+    result = cap_factors.apply(
         calc_lcoe_from_series,
         axis=1,
         **{
@@ -93,20 +115,33 @@ def heat_map(
             "value": value,
         },
     )
+
+    cap_factors["lcoe"] = result.str[0]  # Assuming the calculated LCOE is the first value in the result
+    cap_factors["distance"] = result.str[1]  # Assuming the distance is the second value in the result
+
     cap_factors.rename(columns={"lcoe": "lcoe [€/MWh]"}, inplace=True)  #
     limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10][
         "lcoe [€/MWh]"
     ]
-    cap_factors = cap_factors.to_xarray()["lcoe [€/MWh]"]
+    cap_factors_xarray = cap_factors.to_xarray()["lcoe [€/MWh]"]
 
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
-    cap_factors.plot(ax=ax, transform=plate(), vmax=limit)
+    cap_factors_xarray.plot(ax=ax, transform=plate(), vmax=limit, levels=10)
 
     cells.plot(
         ax=ax,
         **plot_grid_dict,
     )
-    # Display the plot in the main section
+
+    ax.set_xlabel('Longitude')
+    ax.set_ylabel('Latitude')
+
+    # Show axis ticks
+    x_ticks = cells.x[::5]
+    y_ticks = cells.y[::5]
+    plt.xticks(np.arange(min(x_ticks), max(x_ticks), 1.0))
+    plt.yticks(np.arange(min(y_ticks), max(y_ticks), 1.0))
+    fig.tight_layout()
     st.pyplot(fig)
     return cap_factors
 
@@ -199,9 +234,9 @@ def main():
 
         with global_specific:
             st.title("Lcoe and Energy yield for a single Turbine global level")
-            production = color_map(turbine, cutout, cells, plot_grid_dict, projection)
+            production = energy_yield(turbine, cutout, cells, plot_grid_dict, projection)
             #
-            heat_map(
+            heat_cap_factors= heat_map(
                 turbine,
                 production,
                 cells,
@@ -211,7 +246,16 @@ def main():
                 other_countries_connection,
                 upper_lower,
             )
-        # pydeck(heat)
+            with st.expander("Best locations for Turbine"):
+                df = heat_cap_factors.drop(columns=["lon", "lat", "geometry"])
+                df.rename(index={"x": "Longitude", "y": "Latitude"})
+                st.write(df.sort_values(by="lcoe [€/MWh]").head(5))
+                st.download_button(
+                    label="Download data as CSV",
+                    data=df.to_csv(),
+                    file_name='large_df.csv',
+                    mime='text/csv',
+                )
 
 
 if __name__ == "__main__":

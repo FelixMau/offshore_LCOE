@@ -117,6 +117,6 @@ def calc_lcoe_from_series(
             depth=row["depth"],
             distance=distance,
             value=value,
-        )
+        ), distance
     else:
-        return None
+        return None, None
