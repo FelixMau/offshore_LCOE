@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from rasterio.plot import show
 from collections import namedtuple
+from pyproj import CRS
 
 
 def _get_water_depth(
@@ -35,23 +36,27 @@ def get_distance_to_coast(
     :param toggle: if True calculates distance to all relevant countries. False only reffers to Germany
     :return: float distance in meters
     """
-    germany = countries.loc["DE"]
-    denmark = countries.loc["DK"]
-    sweden = countries.loc["SE"]
-    norway = countries.loc["NO"]
+
+    gdf_utm = countries.to_crs(CRS.from_epsg(32633))  # UTM zone 33N, change the EPSG code as needed
+    point_utm = gpd.GeoSeries(point).set_crs(CRS.from_epsg(4326)).to_crs(CRS.from_epsg(32633)).iloc[0]
+
+    germany = gdf_utm.loc["DE"]
+    denmark = gdf_utm.loc["DK"]
+    sweden = gdf_utm.loc["SE"]
+    norway = gdf_utm.loc["NO"]
 
     if toggle == True:
         distance_point = [
-            germany.geometry.distance(point),
-            denmark.geometry.distance(point),
-            sweden.geometry.distance(point),
-            norway.geometry.distance(point),
+            germany.geometry.distance(point_utm),
+            denmark.geometry.distance(point_utm),
+            sweden.geometry.distance(point_utm),
+            norway.geometry.distance(point_utm),
         ]
         min_distance = min(distance_point)
     else:
-        min_distance = germany.geometry.distance(point)
+        min_distance = germany.geometry.distance(point_utm)
 
-    return min_distance
+    return min_distance/1000
 
 
 @dataclasses.dataclass
