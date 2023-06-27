@@ -41,11 +41,13 @@ def get_distance_to_coast(
     point_utm = gpd.GeoSeries(point).set_crs(CRS.from_epsg(4326)).to_crs(CRS.from_epsg(32633)).iloc[0]
 
     germany = gdf_utm.loc["DE"]
-    denmark = gdf_utm.loc["DK"]
-    sweden = gdf_utm.loc["SE"]
-    norway = gdf_utm.loc["NO"]
+
 
     if toggle == True:
+        denmark = gdf_utm.loc["DK"]
+        sweden = gdf_utm.loc["SE"]
+        norway = gdf_utm.loc["NO"]
+        netherlands = gdf_utm.loc["NL"]
         distance_point = [
             germany.geometry.distance(point_utm),
             denmark.geometry.distance(point_utm),
