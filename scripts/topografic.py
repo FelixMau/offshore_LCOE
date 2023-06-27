@@ -59,7 +59,7 @@ def get_distance_to_coast(
     else:
         min_distance = germany.geometry.distance(point_utm)
 
-    return (min_distance/1000)*factor
+    return factor*(min_distance/1000)
 
 
 @dataclasses.dataclass
