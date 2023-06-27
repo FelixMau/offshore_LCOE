@@ -39,20 +39,11 @@ def select_location_and_turbine(countries):
     other_countries_connection = st.sidebar.checkbox(
         "Allow connection to other countries", value=True
     )
-    with st.sidebar.expander("More Settings"):
-        factor_for_distance = st.sidebar.number_input("Chose a distance factor", value=1.0)
-        cuto_off_heat_map_limit = st.sidebar.text_input("Where should the Heatmap price be cutoff? Or set `auto`")
-
-        st.write("The Distance factor is reducing the Distance itself, therefore 'Distance' is no more correct"
-                     "if a different factor to 1 is chosen."
-                     "This is to mimic deploying larger windparks where distance might have lower impact.")
     return (
         Location(x=x, y=y, countries=countries),
         turbine,
         upper_lower,
         other_countries_connection,
-        factor_for_distance,
-        cuto_off_heat_map_limit
     )
 
 
@@ -65,8 +56,6 @@ def heat_map(
     location: Location,
     other_countries_connection,
     value,
-    distance_factor: float = 1,
-        cut_off_limit: str = "auto"
 ):
     """
     Calculates lcoe for every cell with windspeed data and returns GeoDataFrame.
@@ -78,10 +67,6 @@ def heat_map(
     :param location:
     :return:
     """
-    config = namedtuple("conffig", ["year", "turbine", "other_countries"])
-
-    fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
-
     cap_factors = gpd.GeoDataFrame(
         cap_factors.to_dataframe(),
         geometry=gpd.points_from_xy(
@@ -106,23 +91,12 @@ def heat_map(
             "countries": location.countries,
             "other_countries_connection": other_countries_connection,
             "value": value,
-            "distance_factor": distance_factor
-
         },
     )
     cap_factors.rename(columns={"lcoe": "lcoe [€/MWh]"}, inplace=True)  #
-    if cut_off_limit != "auto":
-
-
-        limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10][
+    limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10][
         "lcoe [€/MWh]"
-        ]
-    else:
-        try:
-            limit = float(cut_off_limit)
-        except:
-            limit = 100
-
+    ]
     cap_factors = cap_factors.to_xarray()["lcoe [€/MWh]"]
 
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
@@ -178,14 +152,12 @@ def main():
         turbine,
         upper_lower,
         other_countries_connection,
-        distance_factor,
-        cut_off_heat_map_limit
     ) = select_location_and_turbine(countries=countries)
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
         duration = duration_curve(power_yield, duration_col="Power in MW")
         distance = get_distance_to_coast(
-            countries=countries, point=location.point, toggle=other_countries_connection, factor=distance_factor
+            countries=countries, point=location.point, toggle=other_countries_connection
         )
         lcoe = calc_lcoe(
             capacity=turbine.capacity,
@@ -238,8 +210,6 @@ def main():
                 location,
                 other_countries_connection,
                 upper_lower,
-                distance_factor,
-                cut_off_limit=cut_off_heat_map_limit
             )
         # pydeck(heat)
 

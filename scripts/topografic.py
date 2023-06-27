@@ -27,7 +27,7 @@ def is_location_offshore(countries=1, point=1) -> bool:
 
 
 def get_distance_to_coast(
-    countries: gpd.GeoDataFrame(), point: shapely.geometry.Point(), toggle: bool = True, factor: float = 1
+    countries: gpd.GeoDataFrame(), point: shapely.geometry.Point(), toggle: bool = True
 ) -> float:
     """
     Calculates distance to country shape
@@ -59,7 +59,7 @@ def get_distance_to_coast(
     else:
         min_distance = germany.geometry.distance(point_utm)
 
-    return factor*(min_distance/1000)
+    return min_distance/1000
 
 
 @dataclasses.dataclass

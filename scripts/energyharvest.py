@@ -99,7 +99,7 @@ def power_time_series(
 
 def duration_curve(timeseries, duration_col):
     timeseries.loc[:, "interval"] = 1
-    timeseries_sorted = timeseries.sort_values(by=duration_col, ascending=True)
+    timeseries_sorted = timeseries.sort_values(by=duration_col, ascending=False)
     timeseries_sorted.reset_index(drop=True, inplace=True)
     timeseries_sorted.loc[:, "duration"] = timeseries_sorted.loc[:, "interval"].cumsum()
     timeseries_sorted.loc[:, "percentage"] = (
