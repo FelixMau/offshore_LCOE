@@ -19,33 +19,37 @@ def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
     x = st.sidebar.number_input("X coordinate", value=3.0)
     y = st.sidebar.number_input("Y coordinate", value=54.0)
-    turbine = Turbine(
+    turbine = Turbine.from_beautiful_name(
         name=st.sidebar.selectbox(
             "Chose Windturbine",
-            (
-                "NREL_ReferenceTurbine_2016CACost_10MW_offshore",
-                "NREL_ReferenceTurbine_2016CACost_6MW_offshore",
-                "NREL_ReferenceTurbine_2016CACost_8MW_offshore",
-                "NREL_ReferenceTurbine_2019ORCost_12MW_offshore",
-                "NREL_ReferenceTurbine_2019ORCost_15MW_offshore",
-                "NREL_ReferenceTurbine_2020ATB_12MW_offshore",
-                "NREL_ReferenceTurbine_2020ATB_15MW_offshore",
-                "NREL_ReferenceTurbine_2020ATB_18MW_offshore",
-                "NREL_ReferenceTurbine_5MW_offshore",
-                "Vestas_V112_3MW_offshore",
-                "Vestas_V164_7MW_offshore",
-            ),
+            ("NREL Reference Turbine 10MW",
+            "NREL Reference Turbine 6MW",
+            "NREL Reference Turbine 8MW",
+            "NREL Reference Turbine 12MW",
+            "NREL Reference Turbine 15MW",
+            "NREL Reference Turbine 12MW (2020 ATB)",
+            "NREL Reference Turbine 15MW (2020 ATB)",
+            "NREL Reference Turbine 18MW (2020 ATB)",
+            "NREL Reference Turbine 5MW",
+            "Vestas V112 3MW",
+            "Vestas V164 7MW"),
         ),
     )
     upper_lower = st.sidebar.selectbox("Upper, lower values?", ("upper", "lower"))
     other_countries_connection = st.sidebar.checkbox(
         "Allow connection to other countries", value=True
     )
+    factor_for_distance = st.sidebar.number_input("Chose a distance factor", value=1)
+    with st.sidebar.expander("Info"):
+        st.write("The Distance factor is reducing the Distance itself, therefore 'Distance' is no more correct"
+                 "if a different factor to 1 is chosen."
+                 "This is to mimic deploying larger windparks where distance might have lower impact.")
     return (
         Location(x=x, y=y, countries=countries),
         turbine,
         upper_lower,
         other_countries_connection,
+        factor_for_distance
     )
 
 
@@ -58,6 +62,7 @@ def heat_map(
     location: Location,
     other_countries_connection,
     value,
+    distance_factor: float = 1
 ):
     """
     Calculates lcoe for every cell with windspeed data and returns GeoDataFrame.
@@ -97,6 +102,8 @@ def heat_map(
             "countries": location.countries,
             "other_countries_connection": other_countries_connection,
             "value": value,
+            "distance_factor": distance_factor
+
         },
     )
     cap_factors.rename(columns={"lcoe": "lcoe [€/MWh]"}, inplace=True)  #
@@ -158,12 +165,13 @@ def main():
         turbine,
         upper_lower,
         other_countries_connection,
+        distance_factor
     ) = select_location_and_turbine(countries=countries)
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
         duration = duration_curve(power_yield, duration_col="Power in MW")
         distance = get_distance_to_coast(
-            countries=countries, point=location.point, toggle=other_countries_connection
+            countries=countries, point=location.point, toggle=other_countries_connection, factor=distance_factor
         )
         lcoe = calc_lcoe(
             capacity=turbine.capacity,
@@ -216,6 +224,7 @@ def main():
                 location,
                 other_countries_connection,
                 upper_lower,
+                distance_factor
             )
         # pydeck(heat)
 

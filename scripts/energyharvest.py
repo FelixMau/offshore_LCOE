@@ -30,6 +30,22 @@ class Turbine:
     name: str
     capacity: float = dataclasses.field(init=False)
 
+    @classmethod
+    def from_beautiful_name(cls, name):
+        name = {
+            "NREL Reference Turbine 10MW": "NREL_ReferenceTurbine_2016CACost_10MW_offshore",
+            "NREL Reference Turbine 6MW": "NREL_ReferenceTurbine_2016CACost_6MW_offshore",
+            "NREL Reference Turbine 8MW": "NREL_ReferenceTurbine_2016CACost_8MW_offshore",
+            "NREL Reference Turbine 12MW": "NREL_ReferenceTurbine_2019ORCost_12MW_offshore",
+            "NREL Reference Turbine 15MW": "NREL_ReferenceTurbine_2019ORCost_15MW_offshore",
+            "NREL Reference Turbine 12MW (2020 ATB)": "NREL_ReferenceTurbine_2020ATB_12MW_offshore",
+            "NREL Reference Turbine 15MW (2020 ATB)": "NREL_ReferenceTurbine_2020ATB_15MW_offshore",
+            "NREL Reference Turbine 18MW (2020 ATB)": "NREL_ReferenceTurbine_2020ATB_18MW_offshore",
+            "NREL Reference Turbine 5MW": "NREL_ReferenceTurbine_5MW_offshore",
+            "Vestas V112 3MW": "Vestas_V112_3MW_offshore",
+            "Vestas V164 7MW": "Vestas_V164_7MW_offshore"
+        }[name]
+        return cls(name=name)
     def __post_init__(self):
         with open(windturbines.get(self.name), "r") as f:
             data = yaml.safe_load(f)
