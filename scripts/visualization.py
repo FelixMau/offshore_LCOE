@@ -248,7 +248,7 @@ def main():
             )
             with st.expander("Best locations for Turbine"):
                 df = heat_cap_factors.drop(columns=["lon", "lat", "geometry"])
-                df.rename(index={"x": "Longitude", "y": "Latitude"})
+                df.rename(index={"x": "Longitude", "y": "Latitude"}, inplace=True)
                 st.write(df.sort_values(by="lcoe [€/MWh]").head(5))
                 st.download_button(
                     label="Download data as CSV",
