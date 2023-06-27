@@ -97,6 +97,7 @@ def calc_lcoe_from_series(
     countries: gpd.GeoDataFrame,
     value: str = "lower",
     other_countries_connection: bool = True,
+    distance_factor: float = 1
 ) -> float:
     """
     Takes a pandas series to calculate lcoe based on given series and its index.
@@ -110,6 +111,7 @@ def calc_lcoe_from_series(
             countries=countries,
             point=row["geometry"],
             toggle=other_countries_connection,
+            factor=distance_factor
         )
         return calc_lcoe(
             power_yield=row["Generation in MWh"],
