@@ -10,7 +10,7 @@ from lcoe import calc_lcoe_from_series, calc_lcoe
 import matplotlib.pyplot as plt
 import rasterstats as rs
 import numpy as np
-
+import os
 import pandas as pd
 
 
@@ -40,6 +40,7 @@ def select_location_and_turbine(countries):
     other_countries_connection = st.sidebar.selectbox("Allow connection to other countries",
                                                       ("Yes, all countries", "No, only to Germany")
     )
+    read_from_disk = st.sidebar.checkbox("Read lcoe results from Disk?", value=False)
     if other_countries_connection == "Yes, all countries":
         other_countries_connection = True
     else:
@@ -65,6 +66,7 @@ def select_location_and_turbine(countries):
         turbine,
         upper_lower,
         other_countries_connection,
+        read_from_disk
     )
 
 
@@ -77,6 +79,7 @@ def heat_map(
     location: Location,
     other_countries_connection,
     value,
+        read_from_disk: bool = True
 
 ):
     """
@@ -89,41 +92,48 @@ def heat_map(
     :param location:
     :return:
     """
-    cap_factors = gpd.GeoDataFrame(
-        cap_factors.to_dataframe(),
-        geometry=gpd.points_from_xy(
-            cap_factors.to_dataframe().lon, cap_factors.to_dataframe().lat
-        ),
-    )
 
-    stats = rs.zonal_stats(
-        cells.geometry,
-        location.depth_dataset.read(1),
-        affine=location.depth_dataset.transform,
-        stats=["mean"],
-    )
+    filename = f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp"
+    if os.path.isfile(filename) and read_from_disk:
+        cap_factors = gpd.read_file(filename).set_index(keys=["y", "x"])
+    else:
 
-    cap_factors.reset_index()
-    cap_factors["depth"] = [x["mean"] for x in stats]
-    result = cap_factors.apply(
-        calc_lcoe_from_series,
-        axis=1,
-        **{
-            "capacity": turbine.capacity,
-            "countries": location.countries,
-            "other_countries_connection": other_countries_connection,
-            "value": value,
-        },
-    )
+        cap_factors = gpd.GeoDataFrame(
+            cap_factors.to_dataframe(),
+            geometry=gpd.points_from_xy(
+                cap_factors.to_dataframe().lon, cap_factors.to_dataframe().lat
+            ),
+        )
 
-    cap_factors["lcoe"] = result.str[0]  # Assuming the calculated LCOE is the first value in the result
-    cap_factors["distance"] = result.str[1]  # Assuming the distance is the second value in the result
+        stats = rs.zonal_stats(
+            cells.geometry,
+            location.depth_dataset.read(1),
+            affine=location.depth_dataset.transform,
+            stats=["mean"],
+        )
 
-    cap_factors.rename(columns={"lcoe": "lcoe [€/MWh]"}, inplace=True)  #
-    limit = cap_factors.sort_values(by="lcoe [€/MWh]", ascending=False).iloc[10][
-        "lcoe [€/MWh]"
+        cap_factors.reset_index()
+        cap_factors["depth"] = [x["mean"] for x in stats]
+        result = cap_factors.apply(
+            calc_lcoe_from_series,
+            axis=1,
+            **{
+                "capacity": turbine.capacity,
+                "countries": location.countries,
+                "other_countries_connection": other_countries_connection,
+                "value": value,
+            },
+        )
+
+        cap_factors["lcoe"] = result.str[0]  # Assuming the calculated LCOE is the first value in the result
+        cap_factors["distance"] = result.str[1]  # Assuming the distance is the second value in the result
+        cap_factors.to_file(f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp")
+
+    cap_factors.rename(columns={"lcoe": "lcoe [€_MWh]"}, inplace=True)  #
+    limit = cap_factors.sort_values(by="lcoe [€_MWh]", ascending=False).iloc[10][
+        "lcoe [€_MWh]"
     ]
-    cap_factors_xarray = cap_factors.to_xarray()["lcoe [€/MWh]"]
+    cap_factors_xarray = cap_factors.to_xarray()["lcoe [€_MWh]"]
 
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
     cap_factors_xarray.plot(ax=ax, transform=plate(), vmax=limit, levels=10)
@@ -187,6 +197,7 @@ def main():
         turbine,
         upper_lower,
         other_countries_connection,
+        read_from_disk
     ) = select_location_and_turbine(countries=countries)
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
@@ -245,11 +256,12 @@ def main():
                 location,
                 other_countries_connection,
                 upper_lower,
+                read_from_disk=read_from_disk
             )
             with st.expander("Best locations for Turbine"):
                 df = heat_cap_factors.drop(columns=["lon", "lat", "geometry"])
                 df.rename(index={"x": "Longitude", "y": "Latitude"}, inplace=True)
-                st.write(df.sort_values(by="lcoe [€/MWh]").head(5))
+                st.write(df.sort_values(by="lcoe [€_MWh]").head(5))
                 st.download_button(
                     label="Download data as CSV",
                     data=df.to_csv(),
