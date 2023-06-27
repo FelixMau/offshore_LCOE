@@ -27,7 +27,7 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
         * 1e6
     )
     # Foundation
-    if depth < 40 and distance < 30:  # Monopile
+    if depth < 20:  # Monopile
         capex_found = (
             tech.loc[
                 "Nominal investment (equipment + installation: foundation monopile) [M€/MW_e]"
@@ -36,7 +36,7 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
             * 1e6
         )
 
-    elif (depth > 40 and depth < 60) and (distance > 30 and distance < 90):  # Tripod
+    elif (depth > 20 and depth < 40):  # Tripod
         capex_found = (
             tech.loc[
                 "Nominal investment (equipment+installation: foundation Tripod) [M€/MW_e]"
