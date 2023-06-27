@@ -53,6 +53,7 @@ def get_distance_to_coast(
             denmark.geometry.distance(point_utm),
             sweden.geometry.distance(point_utm),
             norway.geometry.distance(point_utm),
+            netherlands.geometry.distance(point_utm),
         ]
         min_distance = min(distance_point)
     else:
