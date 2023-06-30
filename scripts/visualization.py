@@ -12,12 +12,14 @@ import rasterstats as rs
 import numpy as np
 import os
 import pandas as pd
+import time
 
 
 def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
     x = st.sidebar.number_input("Longitude", value=3.0)
     y = st.sidebar.number_input("Latitude", value=54.0)
+    numer_of_turbines = st.sidebar.number_input("How many Windturbines would you like to install?", value=1)
     turbine = Turbine.from_beautiful_name(
         name=st.sidebar.selectbox(
             "Chose Windturbine",
@@ -35,6 +37,7 @@ def select_location_and_turbine(countries):
                 "Vestas V164 7MW",
             ),
         ),
+        number_of_turbines=numer_of_turbines
     )
     upper_lower = {"Pessimistic": "upper", "Optimistic": "lower"}[
         st.sidebar.selectbox("Mode of Projection", ("Pessimistic", "Optimistic"))
@@ -80,6 +83,7 @@ def select_location_and_turbine(countries):
         upper_lower,
         other_countries_connection,
         read_from_disk,
+        numer_of_turbines
     )
 
 
@@ -104,12 +108,12 @@ def heat_map(
     :param location:
     :return:
     """
+    filename = f"../data/figs/{turbine.name}_{other_countries_connection}_{value}_{turbine.number_of_turbines}.shp"
 
-    filename = f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp"
     if os.path.isfile(filename) and read_from_disk:
         cap_factors = gpd.read_file(filename).set_index(keys=["y", "x"])
     else:
-
+        start_time = time.time()
         cap_factors = gpd.GeoDataFrame(
             cap_factors.to_dataframe(),
             geometry=gpd.points_from_xy(
@@ -143,9 +147,9 @@ def heat_map(
         cap_factors["distance"] = result.str[
             1
         ]  # Assuming the distance is the second value in the result
-        cap_factors.to_file(
-            f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp"
-        )
+        cap_factors.to_file(filename)
+        end_time = time.time()
+        st.write(f"Calculation took: {end_time-start_time} seconds ")
 
     cap_factors.rename(columns={"lcoe": "lcoe [€_MWh]"}, inplace=True)  #
     limit = cap_factors.sort_values(by="lcoe [€_MWh]", ascending=False).iloc[10][
@@ -218,6 +222,7 @@ def main():
         upper_lower,
         other_countries_connection,
         read_from_disk,
+        number_of_turbines
     ) = select_location_and_turbine(countries=countries)
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
@@ -225,7 +230,7 @@ def main():
         distance = get_distance_to_coast(
             countries=countries, point=location.point, toggle=other_countries_connection
         )
-        lcoe = calc_lcoe(
+        lcoe, costs = calc_lcoe(
             capacity=turbine.capacity,
             power_yield=power_yield.sum()["Power in MW"],
             distance=distance,
@@ -260,6 +265,11 @@ def main():
                 x="percentage",
                 y=["Power in MW"],
             )
+            st.title("Capex and Opex")
+            fig, ax = plt.subplots()
+            ax.pie(costs[1:], labels=costs.index[1:], autopct='%1.1f%%')
+            ax.set_aspect("equal")
+            st.pyplot(fig)
 
         with global_specific:
             st.title("Lcoe and Energy yield for a single Turbine global level")

@@ -14,10 +14,12 @@ def energy_yield(turbine, cutout, cells, plot_grid_dict, projection):
     cap_factors = (
         cutout.wind(turbine=turbine.name, capacity_factor=False) * turbine.capacity
     )
-
+    limit = cap_factors.to_dataframe().sort_values(by="specific generation", ascending=True).iloc[600][
+        "specific generation"
+    ]
     fig, ax = plt.subplots(subplot_kw={"projection": projection}, figsize=(9, 7))
     cap_factors.name = "Generation in MWh"
-    cap_factors.plot(ax=ax, transform=plate())
+    cap_factors.plot(ax=ax, transform=plate(), vmin=limit)
     cells.plot(ax=ax, **plot_grid_dict)
 
     # Add x and y axis labels
@@ -38,10 +40,11 @@ def energy_yield(turbine, cutout, cells, plot_grid_dict, projection):
 @dataclasses.dataclass
 class Turbine:
     name: str
+    number_of_turbines: int
     capacity: float = dataclasses.field(init=False)
 
     @classmethod
-    def from_beautiful_name(cls, name):
+    def from_beautiful_name(cls, name, number_of_turbines):
         name = {
             "NREL Reference Turbine 10MW": "NREL_ReferenceTurbine_2016CACost_10MW_offshore",
             "NREL Reference Turbine 6MW": "NREL_ReferenceTurbine_2016CACost_6MW_offshore",
@@ -55,12 +58,12 @@ class Turbine:
             "Vestas V112 3MW": "Vestas_V112_3MW_offshore",
             "Vestas V164 7MW": "Vestas_V164_7MW_offshore",
         }[name]
-        return cls(name=name)
+        return cls(name=name, number_of_turbines=number_of_turbines)
 
     def __post_init__(self):
         with open(windturbines.get(self.name), "r") as f:
             data = yaml.safe_load(f)
-        self.capacity = max(data["POW"])
+        self.capacity = max(data["POW"])*self.number_of_turbines
 
     def beauty_string(self):
         beauty_name = ""
@@ -75,7 +78,7 @@ class Turbine:
 
 
 def power_time_series(
-    cutout: atlite.Cutout, turbine: Turbine | list, location: Location
+    cutout: atlite.Cutout, turbine: Turbine | list, location: Location,
 ):
     """
     Plotting timeseries for given Turbine at given location

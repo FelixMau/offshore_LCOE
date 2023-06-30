@@ -1,7 +1,33 @@
+from typing import Tuple, Any
+
 import pandas as pd
 from topografic import is_location_offshore, get_distance_to_coast
 import geopandas as gpd
+import streamlit as st
 
+@st.cache_data()
+def read_tech_and_cable_data():
+    cables = {
+        'max capacity': [250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500],
+        'Offshore substations': [1, 2, 2, 2, 3, 3, 4, 4, 4, 5],
+        'Export cables': [1, 2, 3, 3, 4, 5, 6, 6, 7, 8]
+    }
+
+    tech = pd.read_csv("../data/lcoe/tech_data.csv", index_col=0)
+
+    cables = pd.DataFrame(cables)
+    return tech, cables
+
+
+def choose_export_cables(capacity)->int:
+    df = read_tech_and_cable_data()[1]
+
+    # Prompt the user for the input capacity
+
+    # Filter the DataFrame to find the number of export cables
+    filtered_df = df[df['max capacity'] > capacity]
+    num_export_cables = filtered_df['Export cables'].iloc[0]
+    return num_export_cables
 
 def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
     """
@@ -15,7 +41,7 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
     :return:
     """
 
-    tech = pd.read_csv("../data/lcoe/tech_data.csv", index_col=0)
+    tech = read_tech_and_cable_data()[0]
     # calculate capex costs
     # Turbine
     capex_turbine = (
@@ -62,14 +88,17 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
         * capacity
         * 1e6
     )
+
+    number_of_cables = choose_export_cables(capacity=capacity)
     # grid connection
     capex_export = (
         tech.loc[
             "Nominal investment (equipment+installation: grid connection) [M€/km]"
-        ][value]
+        ][value]*number_of_cables
         * distance
         * 1e6
     )
+
     # Planning
     capex_project = (
         tech.loc["Nominal investment (Project development etc.) [M€/MW_e]"][value] * 1e6
@@ -88,7 +117,15 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
     )
     # calculate lcoe
     lcoe = ((capex * af) + opex) / power_yield
-    return lcoe
+    return lcoe, pd.Series({
+                "Name": "Capex and Opex",
+                "Capex_Turbine": capex_turbine,
+                "Capex_Foundation": capex_found,
+                "Capex_Array_Cables": capex_array,
+                "Capex_Grid_Connection": capex_export,
+                "Capex_Planning": capex_project,
+                "Opex": opex,
+                })
 
 
 def calc_lcoe_from_series(
@@ -97,7 +134,7 @@ def calc_lcoe_from_series(
     countries: gpd.GeoDataFrame,
     value: str = "lower",
     other_countries_connection: bool = True,
-) -> float:
+) -> tuple[float | Any, float] | None:
     """
     Takes a pandas series to calculate lcoe based on given series and its index.
     :return:
@@ -118,8 +155,8 @@ def calc_lcoe_from_series(
                 depth=row["depth"],
                 distance=distance,
                 value=value,
-            ),
+            )[0],
             distance,
         )
     else:
-        return None, None
+        return None
