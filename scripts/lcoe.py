@@ -27,7 +27,8 @@ def choose_export_cables(capacity)->int:
     # Filter the DataFrame to find the number of export cables
     filtered_df = df[df['max capacity'] > capacity]
     num_export_cables = filtered_df['Export cables'].iloc[0]
-    return num_export_cables
+    num_arrays = filtered_df['Offshore substations'].iloc[0]
+    return num_export_cables, num_arrays
 
 def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
     """
@@ -79,22 +80,25 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
             * 1e6
         )
 
+    number_of_cables, num_arrays = choose_export_cables(capacity=capacity)
+
     # array cables
     capex_array = (
-        (
-            tech.loc["Nominal investment (equipment: array cables) [M€/MW]"][value]
-            + tech.loc["Nominal investment (installation: array cables) [M€/MW]"][value]
-        )
-        * capacity
-        * 1e6
+            (
+                    tech.loc["Nominal investment (equipment: array cables) [M€/MW]"][value]
+                    + tech.loc["Nominal investment (installation: array cables) [M€/MW]"][value]
+            )
+            * num_arrays
+            * capacity
+            * 1e6
     )
 
-    number_of_cables = choose_export_cables(capacity=capacity)
     # grid connection
     capex_export = (
         tech.loc[
             "Nominal investment (equipment+installation: grid connection) [M€/km]"
-        ][value]*number_of_cables
+        ][value]
+        *number_of_cables
         * distance
         * 1e6
     )
