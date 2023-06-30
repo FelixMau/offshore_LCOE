@@ -88,7 +88,6 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
                     tech.loc["Nominal investment (equipment: array cables) [M€/MW]"][value]
                     + tech.loc["Nominal investment (installation: array cables) [M€/MW]"][value]
             )
-            * num_arrays
             * capacity
             * 1e6
     )
