@@ -138,6 +138,8 @@ def calc_lcoe_from_series(
     countries: gpd.GeoDataFrame,
     value: str = "lower",
     other_countries_connection: bool = True,
+    progress: st.progress = None,
+    number_of_values: int = 1
 ) -> tuple[float | Any, float] | None:
     """
     Takes a pandas series to calculate lcoe based on given series and its index.
@@ -145,7 +147,8 @@ def calc_lcoe_from_series(
     """
 
     offshore = is_location_offshore(countries=countries, point=row["geometry"])
-
+    if progress:
+        progress.progress(row["index"] / number_of_values)
     if offshore:
         distance = get_distance_to_coast(
             countries=countries,

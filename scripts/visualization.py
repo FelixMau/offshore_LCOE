@@ -128,8 +128,12 @@ def heat_map(
             stats=["mean"],
         )
 
+        st.markdown("Calculating your new lcoe Heatmap!")
+
+        progress_bar = st.progress(0)
         cap_factors.reset_index()
         cap_factors["depth"] = [x["mean"] for x in stats]
+        cap_factors["index"] = cap_factors.reset_index().index
         result = cap_factors.apply(
             calc_lcoe_from_series,
             axis=1,
@@ -138,6 +142,8 @@ def heat_map(
                 "countries": location.countries,
                 "other_countries_connection": other_countries_connection,
                 "value": value,
+                "progress": progress_bar,
+                "number_of_values": len(cap_factors)
             },
         )
 
