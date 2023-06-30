@@ -36,7 +36,7 @@ def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
             * 1e6
         )
 
-    elif (depth > 20 and depth < 40):  # Tripod
+    elif depth > 20 and depth < 40:  # Tripod
         capex_found = (
             tech.loc[
                 "Nominal investment (equipment+installation: foundation Tripod) [M€/MW_e]"
@@ -111,12 +111,15 @@ def calc_lcoe_from_series(
             point=row["geometry"],
             toggle=other_countries_connection,
         )
-        return calc_lcoe(
-            power_yield=row["Generation in MWh"],
-            capacity=capacity,
-            depth=row["depth"],
-            distance=distance,
-            value=value,
-        ), distance
+        return (
+            calc_lcoe(
+                power_yield=row["Generation in MWh"],
+                capacity=capacity,
+                depth=row["depth"],
+                distance=distance,
+                value=value,
+            ),
+            distance,
+        )
     else:
         return None, None

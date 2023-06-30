@@ -21,8 +21,8 @@ def energy_yield(turbine, cutout, cells, plot_grid_dict, projection):
     cells.plot(ax=ax, **plot_grid_dict)
 
     # Add x and y axis labels
-    ax.set_xlabel('Longitude')
-    ax.set_ylabel('Latitude')
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
 
     # Show axis ticks
     x_ticks = cells.x[::5]
@@ -53,9 +53,10 @@ class Turbine:
             "NREL Reference Turbine 18MW (2020 ATB)": "NREL_ReferenceTurbine_2020ATB_18MW_offshore",
             "NREL Reference Turbine 5MW": "NREL_ReferenceTurbine_5MW_offshore",
             "Vestas V112 3MW": "Vestas_V112_3MW_offshore",
-            "Vestas V164 7MW": "Vestas_V164_7MW_offshore"
+            "Vestas V164 7MW": "Vestas_V164_7MW_offshore",
         }[name]
         return cls(name=name)
+
     def __post_init__(self):
         with open(windturbines.get(self.name), "r") as f:
             data = yaml.safe_load(f)

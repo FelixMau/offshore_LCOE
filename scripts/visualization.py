@@ -14,7 +14,6 @@ import os
 import pandas as pd
 
 
-
 def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
     x = st.sidebar.number_input("Longitude", value=3.0)
@@ -22,51 +21,65 @@ def select_location_and_turbine(countries):
     turbine = Turbine.from_beautiful_name(
         name=st.sidebar.selectbox(
             "Chose Windturbine",
-            ("NREL Reference Turbine 10MW",
-            "NREL Reference Turbine 6MW",
-            "NREL Reference Turbine 8MW",
-            "NREL Reference Turbine 12MW",
-            "NREL Reference Turbine 15MW",
-            "NREL Reference Turbine 12MW (2020 ATB)",
-            "NREL Reference Turbine 15MW (2020 ATB)",
-            "NREL Reference Turbine 18MW (2020 ATB)",
-            "NREL Reference Turbine 5MW",
-            "Vestas V112 3MW",
-            "Vestas V164 7MW"),
+            (
+                "NREL Reference Turbine 10MW",
+                "NREL Reference Turbine 6MW",
+                "NREL Reference Turbine 8MW",
+                "NREL Reference Turbine 12MW",
+                "NREL Reference Turbine 15MW",
+                "NREL Reference Turbine 12MW (2020 ATB)",
+                "NREL Reference Turbine 15MW (2020 ATB)",
+                "NREL Reference Turbine 18MW (2020 ATB)",
+                "NREL Reference Turbine 5MW",
+                "Vestas V112 3MW",
+                "Vestas V164 7MW",
+            ),
         ),
     )
-    upper_lower = {"Pessimistic": "upper",
-                   "Optimistic": "lower"}[st.sidebar.selectbox("Mode of Projection", ("Pessimistic", "Optimistic"))]
-    other_countries_connection = st.sidebar.selectbox("Allow connection to other countries",
-                                                      ("Yes, all countries", "No, only to Germany")
+    upper_lower = {"Pessimistic": "upper", "Optimistic": "lower"}[
+        st.sidebar.selectbox("Mode of Projection", ("Pessimistic", "Optimistic"))
+    ]
+    other_countries_connection = st.sidebar.selectbox(
+        "Allow connection to other countries",
+        ("Yes, all countries", "No, only to Germany"),
     )
-    read_from_disk = st.sidebar.checkbox("Read lcoe results from Disk?", value=False)
+    read_from_disk = st.sidebar.checkbox("Read lcoe results from Disk?", value=True)
     if other_countries_connection == "Yes, all countries":
         other_countries_connection = True
     else:
         other_countries_connection = False
 
     with st.sidebar.expander("Info on Settings"):
-        st.write("`Longitude`: Sets Longitude (x value) of Location for Turbine and Location specific evaluation. "
-                 "Does not interfere with 'Global' values")
+        st.write(
+            "`Longitude`: Sets Longitude (x value) of Location for Turbine and Location specific evaluation. "
+            "Does not interfere with 'Global' values"
+        )
 
-        st.write("`Latitude`: Sets Latitude (y value) of Location for Turbine and Location specific evaluation. "
-                 "Does not interfere with 'Global' values")
+        st.write(
+            "`Latitude`: Sets Latitude (y value) of Location for Turbine and Location specific evaluation. "
+            "Does not interfere with 'Global' values"
+        )
 
-        st.write("`Chose Windturbine`: Select Wind-turbine from atlite Turbine datasets")
+        st.write(
+            "`Chose Windturbine`: Select Wind-turbine from atlite Turbine datasets"
+        )
 
-        st.write("`Mode of Projection`: Determines whether optimistic or pessimistic Values are chosen for"
-                 "prices and Lifetimes in 2025")
+        st.write(
+            "`Mode of Projection`: Determines whether optimistic or pessimistic Values are chosen for"
+            "prices and Lifetimes in 2025"
+        )
 
-        st.write("`Allow connection to other countries`: Defines if connections to other countries than Germany "
-                 "are allowed. Influences the `Distance` value")
+        st.write(
+            "`Allow connection to other countries`: Defines if connections to other countries than Germany "
+            "are allowed. Influences the `Distance` value"
+        )
 
     return (
         Location(x=x, y=y, countries=countries),
         turbine,
         upper_lower,
         other_countries_connection,
-        read_from_disk
+        read_from_disk,
     )
 
 
@@ -79,8 +92,7 @@ def heat_map(
     location: Location,
     other_countries_connection,
     value,
-        read_from_disk: bool = True
-
+    read_from_disk: bool = True,
 ):
     """
     Calculates lcoe for every cell with windspeed data and returns GeoDataFrame.
@@ -125,9 +137,15 @@ def heat_map(
             },
         )
 
-        cap_factors["lcoe"] = result.str[0]  # Assuming the calculated LCOE is the first value in the result
-        cap_factors["distance"] = result.str[1]  # Assuming the distance is the second value in the result
-        cap_factors.to_file(f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp")
+        cap_factors["lcoe"] = result.str[
+            0
+        ]  # Assuming the calculated LCOE is the first value in the result
+        cap_factors["distance"] = result.str[
+            1
+        ]  # Assuming the distance is the second value in the result
+        cap_factors.to_file(
+            f"../data/figs/{turbine.name}_{other_countries_connection}_{value}.shp"
+        )
 
     cap_factors.rename(columns={"lcoe": "lcoe [€_MWh]"}, inplace=True)  #
     limit = cap_factors.sort_values(by="lcoe [€_MWh]", ascending=False).iloc[10][
@@ -143,8 +161,8 @@ def heat_map(
         **plot_grid_dict,
     )
 
-    ax.set_xlabel('Longitude')
-    ax.set_ylabel('Latitude')
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
 
     # Show axis ticks
     x_ticks = cells.x[::5]
@@ -166,7 +184,9 @@ def main():
     @st.cache_resource()
     def load_cutout():
 
-        cutout = atlite.Cutout("../data/weather/western-europe-2011.nc", )
+        cutout = atlite.Cutout(
+            "../data/weather/western-europe-2011.nc",
+        )
         cutout.prepare()
         return cutout
 
@@ -197,7 +217,7 @@ def main():
         turbine,
         upper_lower,
         other_countries_connection,
-        read_from_disk
+        read_from_disk,
     ) = select_location_and_turbine(countries=countries)
     with evaluation:
         power_yield = power_time_series(cutout, turbine, location=location)
@@ -225,8 +245,6 @@ def main():
             f"The Turbine is not Producing Energy for {round(duration['Power in MW'].value_counts()[0]/87.60, 3)} \
                     % of the year"
         )
-        with st.expander("Additional evaluation"):
-            even_more_results(power_yield.loc[:, "Power in MW"])
     with graphs:
         location_specific, global_specific = st.tabs(
             ["Location Specific", "Global Turbine specific"]
@@ -245,9 +263,11 @@ def main():
 
         with global_specific:
             st.title("Lcoe and Energy yield for a single Turbine global level")
-            production = energy_yield(turbine, cutout, cells, plot_grid_dict, projection)
+            production = energy_yield(
+                turbine, cutout, cells, plot_grid_dict, projection
+            )
             #
-            heat_cap_factors= heat_map(
+            heat_cap_factors = heat_map(
                 turbine,
                 production,
                 cells,
@@ -256,17 +276,27 @@ def main():
                 location,
                 other_countries_connection,
                 upper_lower,
-                read_from_disk=read_from_disk
+                read_from_disk=read_from_disk,
             )
             with st.expander("Best locations for Turbine"):
                 df = heat_cap_factors.drop(columns=["lon", "lat", "geometry"])
                 df.rename(index={"x": "Longitude", "y": "Latitude"}, inplace=True)
+                df.rename(
+                    columns={
+                        "x": "Longitude",
+                        "y": "Latitude",
+                        "distance": "distance [m]",
+                        "depth": "depth[m]",
+                        "Generation": "Generation [MWh]",
+                    },
+                    inplace=True,
+                )
                 st.write(df.sort_values(by="lcoe [€_MWh]").head(5))
                 st.download_button(
                     label="Download data as CSV",
                     data=df.to_csv(),
-                    file_name='large_df.csv',
-                    mime='text/csv',
+                    file_name=f"lcoe_{turbine}.csv",
+                    mime="text/csv",
                 )
 
 

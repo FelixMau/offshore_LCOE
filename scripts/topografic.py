@@ -37,11 +37,17 @@ def get_distance_to_coast(
     :return: float distance in meters
     """
 
-    gdf_utm = countries.to_crs(CRS.from_epsg(32633))  # UTM zone 33N, change the EPSG code as needed
-    point_utm = gpd.GeoSeries(point).set_crs(CRS.from_epsg(4326)).to_crs(CRS.from_epsg(32633)).iloc[0]
+    gdf_utm = countries.to_crs(
+        CRS.from_epsg(32633)
+    )  # UTM zone 33N, change the EPSG code as needed
+    point_utm = (
+        gpd.GeoSeries(point)
+        .set_crs(CRS.from_epsg(4326))
+        .to_crs(CRS.from_epsg(32633))
+        .iloc[0]
+    )
 
     germany = gdf_utm.loc["DE"]
-
 
     if toggle == True:
         denmark = gdf_utm.loc["DK"]
@@ -59,7 +65,7 @@ def get_distance_to_coast(
     else:
         min_distance = germany.geometry.distance(point_utm)
 
-    return min_distance/1000
+    return min_distance / 1000
 
 
 @dataclasses.dataclass
