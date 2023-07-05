@@ -20,9 +20,9 @@ If there is no link shown open a Browser and type `localhost:8051`
 5. Check for the downloaded Filename and install via `bash Anaconda3-2018.12-Linux-x86_64.sh` (replace with downloaded Filename)
 6. `conda install git`
 7. `git clone https://github.com/FelixMau/offshore_LCOE.git`
-8. conda install pip
+8. `conda install pip`
 9. `conda env create -f environment.yml`
-10. conda activate LCOE
+10. `conda activate LCOE`
 11. `streanlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
 
 ### Troubleshooting
