@@ -19,13 +19,16 @@ If there is no link shown open a Browser and type `localhost:8051`
 3. Optional: Navigate to ./home and mkdir `yourdir` and cd into `yourdir`
 4. Go to the [Conda website](https://docs.conda.io/en/latest/miniconda.html#linux-installers) and copy the link for the Conda version you like or use this (maybe outdated) Version
    wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh (if you want to use a newer Version just replace the link after wget. 
-5. Check for the downloaded Filename and install via `bash Anaconda3-2018.12-Linux-x86_64.sh` (replace with downloaded Filename)
-6. `conda install git`
-7. `git clone https://github.com/FelixMau/offshore_LCOE.git`
-8. `conda install pip`
-9. `conda env create -f environment.yml`
-10. `conda activate LCOE`
-11. `streamlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
+5. Check for the downloaded Filename and install via `sudo bash Anaconda3-2018.12-Linux-x86_64.sh` (replace with downloaded Filename)
+6. sudo apt install python3
+7. `sudo apt install git`
+8. `git clone https://github.com/FelixMau/offshore_LCOE.git`
+9. `cd offshore_LCOE/data` `mkdir weather` `cd weather` `wget https://tubcloud.tu-berlin.de/s/DYnHGnYR4389bY8/download/western-europe-2011.nc` `cd ..` `cd ..`
+10. `conda install pip`
+11. `conda env create -f environment.yml`
+12. `conda activate LCOE`
+13. `cd offshore_LCOE/data/weather`
+14. `streamlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
 
 ### Troubleshooting
 
