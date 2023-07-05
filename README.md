@@ -1,6 +1,8 @@
 # offshore_LCOE
 Student Project to estimate LCOE and Energyharvest for offshore windturbines in Germany
 
+Within this Project an Streamlit app was 
+
 ## How to use
 Git Clone Repository to your local machine and with Conda install Packages from `environment.yml`
 
@@ -23,7 +25,7 @@ If there is no link shown open a Browser and type `localhost:8051`
 8. `conda install pip`
 9. `conda env create -f environment.yml`
 10. `conda activate LCOE`
-11. `streanlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
+11. `streamlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
 
 ### Troubleshooting
 
