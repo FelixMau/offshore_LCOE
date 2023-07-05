@@ -25,6 +25,15 @@ If there is no link shown open a Browser and type `localhost:8051`
 10. conda activate LCOE
 11. `streanlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
 
+### Troubleshooting
+
+If you are facing issues with our program, follow these steps to troubleshoot:
+1. Look up the error message: When encountering an error, carefully read the error message and try to understand its cause. This can often provide valuable insights into the issue you're facing.
+2. Check the documentation: Review the project documentation, including the instructions and any troubleshooting sections, to see if there are any specific solutions or workarounds for the problem you're experiencing.
+3. Search for similar issues: Search online resources, such as forums or issue trackers, to see if others have encountered a similar problem. This can help you find potential solutions or workarounds shared by the community.
+4. Create an issue: If you're still unable to resolve the issue, consider creating an issue in the project's repository. Clearly explain the problem you're facing, provide any relevant error messages or logs, and include steps to reproduce the issue if possible. This will help the project maintainers and the community understand the problem and provide assistance.
+Please note that our application may be more challenging to install and run on Windows machines, and we might not be able to provide extensive support for Windows-specific issues. However, we will do our best to assist you within our capabilities.
+
 ## Used tools
 
 ### [Atlite](https://atlite.readthedocs.io/en/latest/)
