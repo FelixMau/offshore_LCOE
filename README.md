@@ -5,9 +5,7 @@ Within this Project an Streamlit app was
 
 ## How to use
 1. Git Clone Repository to your local machine and with Conda install Packages from `environment.yml`
-2. Make sure to download all necesary data sets as in file structure [here](https://tubcloud.tu-berlin.de/s/oqJYaQwYFWtT9p3/download) (**Most datasets should be included since v0.1.2** but [weather data](https://tubcloud.tu-berlin.de/s/DYnHGnYR4389bY8/download/western-europe-2011.nc) needs to be added manually)
-3. 
-    
+2. Make sure to download all necesary data sets as in file structure [here](https://tubcloud.tu-berlin.de/s/oqJYaQwYFWtT9p3/download) (**Most datasets should be included since v0.1.2** but [weather data](https://tubcloud.tu-berlin.de/s/DYnHGnYR4389bY8/download/western-europe-2011.nc) needs to be added manually)    
 
 
 To run the app open your Terminal 
