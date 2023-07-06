@@ -7,7 +7,6 @@ Within this Project an Streamlit app was
 1. Git Clone Repository to your local machine and with Conda install Packages from `environment.yml`
 2. Make sure to download all necesary data sets as in file structure [here](https://tubcloud.tu-berlin.de/s/oqJYaQwYFWtT9p3/download) (**Most datasets should be included since v0.1.2** but [weather data](https://tubcloud.tu-berlin.de/s/DYnHGnYR4389bY8/download/western-europe-2011.nc) needs to be added manually)    
 
-
 To run the app open your Terminal 
 - activate Conda environment with `conda activate LCOE`
 - navigate to the scripts folder and run `streamlit run visualiozation.py`
@@ -31,6 +30,9 @@ If there is no link shown open a Browser and type `localhost:8051`
 12. `conda activate LCOE`
 13. `cd offshore_LCOE/data/weather`
 14. `streamlit run offshore_LCOE/scitps/visualization.py` (make sure to include typo in visualization)
+
+### Adjustments
+If you want to use another year for modeling you have to setup an API key to [Copernicus ERA5 API](https://cds.climate.copernicus.eu/api-how-to) then modify and run `weather.py` accordingly. Afterwards update atlite.cutout reading within `visualization.py` with your custom filename.
 
 ### Troubleshooting
 
