@@ -256,6 +256,10 @@ def main():
             f"The Turbine is not Producing Energy for {round(duration['Power in MW'].value_counts()[0]/87.60, 3)} \
                     % of the year"
         )
+        st.write(
+            f"The Turbine(park) has an average capacity factor of \
+            {round(100*power_yield.sum()['Power in MW']/(turbine.capacity*len(power_yield)), 1)} % over the year"
+        )
     with graphs:
         location_specific, global_specific = st.tabs(
             ["Location Specific", "Global Turbine specific"]
@@ -273,8 +277,12 @@ def main():
             )
             st.title("Capex and Opex")
             fig, ax = plt.subplots()
-            ax.pie(costs[1:], labels=costs.index[1:], autopct='%1.1f%%')
+            #explode = [0,0,0.1,0,0,0.1]
+            ax.pie(costs[1:], autopct='%1.f%%',
+                   #explode=explode,
+                   textprops ={"fontsize": 8})
             ax.set_aspect("equal")
+            ax.legend(costs.index[1:], loc='upper left', fontsize="x-small", bbox_to_anchor=(-0.3, 1))
             st.pyplot(fig)
 
         with global_specific:

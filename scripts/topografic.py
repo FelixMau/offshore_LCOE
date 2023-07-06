@@ -103,8 +103,10 @@ def print_depth_map(location: Location) -> None:
     countries.plot(ax=ax, color="none")
     point = shapely.geometry.Point(location.x, location.y)
     ax.scatter(point.x, point.y, color="red", marker="o", s=50)
+    ax.set_title("Topographic map and given Location as red dot")
 
     img = show(band, transform=dataset.transform, ax=ax, vmin=-100, vmax=10)
     im = img.get_images()[0]
-    fig.colorbar(im, ax=ax)
+    chbar = fig.colorbar(im, ax=ax)
+    chbar.set_label("Elevation to sea level [m]")
     st.pyplot(fig)
