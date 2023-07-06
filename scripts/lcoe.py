@@ -30,7 +30,7 @@ def choose_export_cables(capacity)->int:
     num_arrays = filtered_df['Offshore substations'].iloc[0]
     return num_export_cables, num_arrays
 
-def calc_lcoe(capacity=1, power_yield=1, distance=1, depth=1, value="lower"):
+def calc_lcoe(capacity: float, power_yield: float, distance: float, depth: float, value: str="lower"):
     """
     # Todo: Check units
     :param capacity: Capacity of Turbine in MW
