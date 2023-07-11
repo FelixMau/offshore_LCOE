@@ -17,9 +17,9 @@ import time
 
 def select_location_and_turbine(countries):
     st.sidebar.title("Settings")
-    x = st.sidebar.number_input("Longitude", value=3.0)
-    y = st.sidebar.number_input("Latitude", value=54.0)
-    numer_of_turbines = st.sidebar.number_input("How many Windturbines would you like to install?", value=1)
+    x = st.sidebar.number_input("Longitude", value=6.81)
+    y = st.sidebar.number_input("Latitude", value=53.98)
+    numer_of_turbines = st.sidebar.number_input("How many Windturbines would you like to install?", value=54)
     turbine = Turbine.from_beautiful_name(
         name=st.sidebar.selectbox(
             "Chose Windturbine",
