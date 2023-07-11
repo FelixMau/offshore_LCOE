@@ -66,7 +66,7 @@ def calc_lcoe(capacity: float, power_yield: float, distance: float, depth: float
     elif depth > 20 and depth < 40:  # Tripod
         capex_found = (
             tech.loc[
-                "Nominal investment (equipment+installation: foundation Tripod) [M€/MW_e]"
+                "Nominal investment (equipment + installation: foundation jacket) [M€/MW_e]"
             ][value]
             * capacity
             * 1e6
