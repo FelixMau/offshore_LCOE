@@ -315,6 +315,7 @@ def main():
                     },
                     inplace=True,
                 )
+                df.index.names = ["Longitude", "Latitude"]
                 st.write(df.sort_values(by="lcoe [€_MWh]").head(5))
                 st.download_button(
                     label="Download data as CSV",
