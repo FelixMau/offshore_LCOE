@@ -1,7 +1,7 @@
 # offshore_LCOE
 Student Project to estimate LCOE and Energyharvest for offshore windturbines in Germany
 
-Within this Project a Streamlit app was developed. The App is also hosted on a Server to provide easy access to play around and learn about offshore wind and its cost influencing factors.
+Within this Project a Streamlit app was developed. The App is also hosted on a Server to provide easy access to play around and learn about offshore wind energy and its cost influencing factors.
 
 ## How to use
 1. Git Clone Repository to your local machine and with Conda install Packages from `environment.yml`
