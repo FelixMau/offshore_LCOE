@@ -14,8 +14,8 @@ To run the app open your Terminal
 Now the App should be running at a localhost statet within your Terminal. The Default Port is 8501. 
 If there is no link shown open a Browser and type `localhost:8051`
 
-### On Ubuntu Server
-1. Setup your Server as you like with an IP that you know.
+### On Ubuntu (Server)
+1. Setup your Ubuntu (Server as you like with an IP that you know)
 2. apt-upgrade to be shure to be up to date
 3. Optional: Navigate to ./home and mkdir `yourdir` and cd into `yourdir`
 4. Go to the [Conda website](https://docs.conda.io/en/latest/miniconda.html#linux-installers) and copy the link for the Conda version you like or use this (maybe outdated) Version
